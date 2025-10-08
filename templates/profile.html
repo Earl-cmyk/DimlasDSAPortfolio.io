@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="profile-card profile-linkedin">
+  <div class="left">
+    <div class="avatar">
+      <img src="{{ url_for('uploaded_file', filename=profile.profile_picture) }}" alt="profile" onerror="this.src='/static/image/Profile.png'">
+    </div>
+  </div>
+  <div class="right">
+    <h2>{{ profile.name }}</h2>
+    <p class="muted">{{ profile.course }} — {{ profile.subject }}</p>
+    <p><strong>Student number:</strong> {{ profile.student_number }}</p>
+    <blockquote>{{ profile.saying }}</blockquote>
+  </div>
+</section>
+
+<div class="library-section">
+  <h3>📚 My Project Library</h3>
+
+  {% if folder_files %}
+    {% for folder_name, files in folder_files.items() %}
+      <div class="folder">
+        <h4>{{ folder_name }}</h4>
+        <ul>
+          {% for file in files %}
+            <li>
+              <strong>{{ file.name }}</strong> ({{ file.file_type }})
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  {% if uncategorized_files %}
+    <div class="folder">
+      <h4>Uncategorized</h4>
+      <ul>
+        {% for file in uncategorized_files %}
+          <li>
+            <strong>{{ file.name }}</strong> ({{ file.file_type }})
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

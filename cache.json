@@ -1,0 +1,48 @@
+{
+  "folders": [
+    {
+      "id": 4,
+      "name": "Lab 3_Dimla",
+      "created_at": 1759884089,
+      "files": [
+        {
+          "id": 4,
+          "name": "lab3_flask.zip",
+          "filename": "lab3_flask.zip",
+          "file_type": "zip",
+          "created_at": 1759886290
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Lab 2_Dimla",
+      "created_at": 1759883484,
+      "files": [
+        {
+          "id": 3,
+          "name": "lab3_list_comprehension.ipynb",
+          "filename": "lab3_list_comprehension.ipynb",
+          "file_type": "ipynb",
+          "created_at": 1759883509
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Lab 1_Dimla",
+      "created_at": 1759883476,
+      "files": [
+        {
+          "id": 2,
+          "name": "lab1_text_analysis_lab2_list.ipynb",
+          "filename": "lab1_text_analysis_lab2_list_1.ipynb",
+          "file_type": "ipynb",
+          "created_at": 1759883498
+        }
+      ]
+    }
+  ],
+  "root_files": [],
+  "updated_at": 1759886290
+}

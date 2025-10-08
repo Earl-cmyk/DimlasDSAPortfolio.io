@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Welcome — Dimla, Earl Jhon D.</h1>
+  <p>Computer Engineering student. Subject: Data Structure and Algorithms.</p>
+  <div class="hero-actions">
+    <a class="btn" href="{{ url_for('profile') }}">View Profile</a>
+    <a class="btn outline" href="{{ url_for('works') }}">View Works</a>
+  </div>
+</section>
+{% endblock %}

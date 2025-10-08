@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DimlasDSAPortfolio.io</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <nav class="top-nav">
+    <div class="brand">DimlasDSAPortfolio.io</div>
+    <ul class="nav-links">
+      <li><a href="{{ url_for('home') }}">Home</a></li>
+      <li><a href="{{ url_for('profile') }}">Profile</a></li>
+      <li><a href="{{ url_for('works') }}">Projects</a></li>
+      <li><a href="#" id="contactBtn">Contacts</a></li>
+    </ul>
+  </nav>
+
+      <!-- Contact Modal -->
+    <div id="contactPopup" class="popup-overlay">
+      <div class="popup-content">
+        <span id="closePopupBtn" class="close-btn">&times;</span>
+        <div class="id-card">
+          <div class="id-left">
+            <img src="{{ contact.profile_picture }}" alt="Profile Picture" class="id-photo">
+          </div>
+          <div class="id-right">
+              <p><strong>Github Profile:</strong> {{ contact.github }}</p>
+            <p><strong>Student Email:</strong> {{ contact.student_email }}</p>
+            <p><strong>Contact No.:</strong> {{ contact.contact_number }}</p>
+            <p><strong>Work Email:</strong> {{ contact.work_email }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- Main Page Content -->
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <small>© Dimla, Earl Jhon D. — Data Structure and Algorithms — BSCPE 2-3</small>
+  </footer>
+
+  <!-- JS -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

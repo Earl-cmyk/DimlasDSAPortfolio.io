@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Works</h2>
+
+<!-- mini-nav for small tools -->
+<div class="mini-nav">
+  {% for item in mini_nav %}
+    <button class="mini-btn" data-tool="{{ item }}">{{ item }}</button>
+  {% endfor %}
+</div>
+
+<div class="tools-panel" id="tools-panel" style="display:none;">
+  <div id="tools-content"></div>
+</div>
+
+<!-- Projects & folder manager -->
+<section class="works-grid">
+  <div class="left-col">
+    <div class="panel">
+      <h3>Folders</h3>
+      <div id="folders-list">Loading...</div>
+      <input id="new-folder-name" placeholder="New folder name" />
+      <button id="create-folder">Create Folder</button>
+    </div>
+
+    <div class="panel">
+      <h3>Upload File</h3>
+      <form id="upload-form">
+        <input type="file" name="file" id="file-input" />
+        <label>Folder (optional)</label>
+        <select id="upload-folder">
+          <option value="">-- root --</option>
+        </select>
+        <button type="submit">Upload</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="right-col">
+    <div class="panel">
+      <h3>Library / Files</h3>
+      <div id="files-list">Loading...</div>
+    </div>
+
+    <div class="panel">
+      <h3>File Viewer / Editor</h3>
+      <div id="file-editor">
+        <div id="file-meta"></div>
+        <textarea id="file-content" style="width:100%;height:200px;"></textarea>
+        <button id="save-file">Save</button>
+        <button id="run-file">Run (.py only)</button>
+        <pre id="run-output" style="background:#222;color:#ddd;padding:8px;"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
