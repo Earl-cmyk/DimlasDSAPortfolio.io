@@ -1,11 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="hero">
-  <h1>Welcome — Dimla, Earl Jhon D.</h1>
-  <p>Computer Engineering student. Subject: Data Structure and Algorithms.</p>
-  <div class="hero-actions">
-    <a class="btn" href="{{ url_for('profile') }}">View Profile</a>
-    <a class="btn outline" href="{{ url_for('works') }}">View Works</a>
+  <img src="{{ url_for('static', filename='image/PUP Logo.png') }}" alt="PUP Logo" class="logo-left">
+  <div class="hero-text">
+    <h1 style="color: #800000">Welcome — Dimla, Earl Jhon D.</h1>
+    <p style="color: #800000">Computer Engineering student. Subject: Data Structure and Algorithms.</p>
+    <div class="hero-actions">
+      <a class="btn" href="{{ url_for('profile') }}">View Profile</a>
+      <a class="btn outline" href="{{ url_for('works') }}">View Works</a>
+    </div>
   </div>
+  <img src="{{ url_for('static', filename='image/CPE_Logo.jpg') }}" alt="CPE Logo" class="logo-right">
 </section>
+
 {% endblock %}
