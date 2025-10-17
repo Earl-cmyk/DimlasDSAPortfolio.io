@@ -405,6 +405,40 @@ def api_area_triangle():
     except Exception:
         return jsonify({"error": "invalid base/height"}), 400
 
+def infix_to_postfix(expression):
+    precedence = {'+':1, '-':1, '*':2, '/':2, '^':3}
+    stack = []
+    output = ""
+
+    for char in expression:
+        if char.isalnum():  # Operand
+            output += char
+        elif char == '(':
+            stack.append(char)
+        elif char == ')':
+            while stack and stack[-1] != '(':
+                output += stack.pop()
+            stack.pop()  # Remove '('
+        else:  # Operator
+            while stack and stack[-1] != '(' and precedence[char] <= precedence.get(stack[-1], 0):
+                output += stack.pop()
+            stack.append(char)
+
+    while stack:
+        output += stack.pop()
+
+    return output
+
+@app.route("/api/tool/stack/infix_to_postfix", methods=["POST"])
+def api_stack_infix_to_postfix():
+    data = request.json or {}
+    expression = data.get("expression", "")
+    try:
+        result = infix_to_postfix(expression)
+        return jsonify({"postfix": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 # -------------------------
 # Run app
 # -------------------------

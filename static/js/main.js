@@ -195,4 +195,38 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+document.addEventListener("DOMContentLoaded", () => {
+  const toolsContent = document.getElementById("tools-content");
 
+  document.querySelectorAll(".mini-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tool = btn.dataset.tool;
+
+      if (tool === "Stack Converter") {
+        toolsContent.innerHTML = `
+          <h3>Stack Converter (Infix ➜ Postfix)</h3>
+          <input id="expr" placeholder="Enter infix expression, e.g. (A+B)*C"
+                 style="width:60%; padding:8px; border-radius:6px;">
+          <button id="convert" class="mini-btn" style="background:#0b5cff; color:white;">Convert</button>
+          <div id="result" style="margin-top:10px; font-weight:bold;"></div>
+        `;
+
+        document.getElementById("convert").onclick = async () => {
+          const expression = document.getElementById("expr").value.trim();
+          const res = await fetch("/api/tool/stack/infix_to_postfix", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ expression })
+          });
+          const data = await res.json();
+          const resultDiv = document.getElementById("result");
+          if (data.postfix) {
+            resultDiv.textContent = `Postfix: ${data.postfix}`;
+          } else {
+            resultDiv.textContent = `Error: ${data.error}`;
+          }
+        };
+      }
+    });
+  });
+});
