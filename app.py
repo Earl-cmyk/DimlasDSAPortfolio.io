@@ -405,6 +405,86 @@ def api_area_triangle():
     except Exception:
         return jsonify({"error": "invalid base/height"}), 400
 
+linked_list = []
+
+def init_db():
+    conn = sqlite3.connect("linkedlist.db")
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS linkedlist_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            action TEXT,
+            value TEXT,
+            position TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+# Initialize database at app start
+init_db()
+
+
+@app.route("/api/tool/linkedlist", methods=["GET"])
+def api_linkedlist_get():
+    """Return the current linked list and full history from DB"""
+    conn = sqlite3.connect("linkedlist.db")
+    c = conn.cursor()
+    c.execute("SELECT action, value, position, timestamp FROM linkedlist_history ORDER BY id DESC")
+    conn.close()
+    return jsonify({"list": linked_list})
+
+
+@app.route("/api/tool/linkedlist/add", methods=["POST"])
+def api_linkedlist_add():
+    """Add an element to the linked list (begin or end)"""
+    data = request.json or {}
+    value = data.get("value", "")
+    position = data.get("position", "end")
+
+    if not value:
+        return jsonify({"error": "value is required"}), 400
+
+    if position == "begin":
+        linked_list.insert(0, value)
+    else:
+        linked_list.append(value)
+
+    conn = sqlite3.connect("linkedlist.db")
+    c = conn.cursor()
+    c.execute(
+        "INSERT INTO linkedlist_history (action, value, position) VALUES (?, ?, ?)",
+        ("add", value, position)
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": f"Added {value} at {position}", "list": linked_list})
+
+
+@app.route("/api/tool/linkedlist/remove", methods=["POST"])
+def api_linkedlist_remove():
+    """Remove an element from the linked list (begin or end)"""
+    data = request.json or {}
+    position = data.get("position", "end")
+
+    if not linked_list:
+        return jsonify({"error": "list is empty"}), 400
+
+    value = linked_list.pop(0) if position == "begin" else linked_list.pop()
+
+    conn = sqlite3.connect("linkedlist.db")
+    c = conn.cursor()
+    c.execute(
+        "INSERT INTO linkedlist_history (action, value, position) VALUES (?, ?, ?)",
+        ("remove", value, position)
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": f"Removed {value} from {position}", "list": linked_list})
+
 def infix_to_postfix(expression):
     precedence = {'+':1, '-':1, '*':2, '/':2, '^':3}
     stack = []

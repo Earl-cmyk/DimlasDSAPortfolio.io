@@ -1,34 +1,6 @@
 {
   "folders": [
     {
-      "id": 5,
-      "name": "Lab 4_Dimla",
-      "created_at": 1760606579,
-      "files": [
-        {
-          "id": 5,
-          "name": "lab4_linked_list.py",
-          "filename": "lab4_linked_list.py",
-          "file_type": "py",
-          "created_at": 1760606630
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "name": "Lab 3_Dimla",
-      "created_at": 1759884089,
-      "files": [
-        {
-          "id": 4,
-          "name": "lab3_flask.zip",
-          "filename": "lab3_flask.zip",
-          "file_type": "zip",
-          "created_at": 1759886290
-        }
-      ]
-    },
-    {
       "id": 3,
       "name": "Lab 2_Dimla",
       "created_at": 1759883484,
@@ -58,5 +30,5 @@
     }
   ],
   "root_files": [],
-  "updated_at": 1760606630
+  "updated_at": 1760856512
 }

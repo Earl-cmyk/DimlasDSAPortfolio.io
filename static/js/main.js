@@ -230,3 +230,64 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+document.addEventListener("DOMContentLoaded", () => {
+  const buttons = document.querySelectorAll(".mini-btn");
+  const toolsPanel = document.getElementById("tools-content");
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const tool = btn.dataset.tool;
+      toolsPanel.innerHTML = `<p style="color:#aaa;">Loading ${tool}...</p>`;
+
+      if (tool === "Linked List") {
+        toolsPanel.innerHTML = `
+          <h3>Linked List Tool</h3>
+          <input id="ll-value" placeholder="Value" style="margin:4px;" />
+          <select id="ll-position">
+            <option value="begin">Begin</option>
+            <option value="end">End</option>
+          </select>
+          <button id="ll-add">Add</button>
+          <button id="ll-remove">Remove</button>
+          <button id="ll-refresh">Show List</button>
+          <pre id="ll-output" style="background:#222;color:#0f0;padding:8px;margin-top:8px;"></pre>
+        `;
+
+        const output = document.getElementById("ll-output");
+
+        async function refreshList() {
+          const res = await fetch("/api/tool/linkedlist");
+          const data = await res.json();
+          output.textContent = "List: " + JSON.stringify(data.list);
+        }
+
+        document.getElementById("ll-add").onclick = async () => {
+          const value = document.getElementById("ll-value").value;
+          const position = document.getElementById("ll-position").value;
+          await fetch("/api/tool/linkedlist/add", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ value, position })
+          });
+          refreshList();
+        };
+
+        document.getElementById("ll-remove").onclick = async () => {
+          const position = document.getElementById("ll-position").value;
+          await fetch("/api/tool/linkedlist/remove", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ position })
+          });
+          refreshList();
+        };
+
+        document.getElementById("ll-refresh").onclick = refreshList;
+
+        refreshList();
+      } else {
+        toolsPanel.innerHTML = `<p style="color:#ccc;">Tool "${tool}" not yet implemented.</p>`;
+      }
+    });
+  });
+});
