@@ -1,11 +1,3 @@
-# app.py
-"""
-DimlasDSAPortfolio Flask app (Flask 3.0.0)
-- REST endpoints for folder/file management
-- JSON cache (cache.json) for quick listing
-- SQLite storage (portfolio.db)
-"""
-
 import sqlite3
 import json
 import time
@@ -17,18 +9,12 @@ APP_ROOT = Path(__file__).parent
 UPLOAD_DIR = APP_ROOT / "uploads"
 DB_PATH = APP_ROOT / "portfolio.db"
 CACHE_PATH = APP_ROOT / "cache.json"
-
-# Ensure upload dir exists
 UPLOAD_DIR.mkdir(exist_ok=True)
-
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config["UPLOAD_DIR"] = str(UPLOAD_DIR)
 app.config["DB_PATH"] = str(DB_PATH)
-app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB upload limit
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  
 
-# -------------------------
-# Database helpers
-# -------------------------
 def get_db():
     """Return sqlite3 connection (row access by name)."""
     db = getattr(g, "_database", None)
@@ -58,9 +44,6 @@ def execute_db(query, params=()):
     cur.close()
     return lastrowid
 
-# -------------------------
-# JSON cache helper
-# -------------------------
 def load_cache():
     if CACHE_PATH.exists():
         try:
@@ -72,9 +55,6 @@ def load_cache():
 def write_cache(obj):
     CACHE_PATH.write_text(json.dumps(obj, indent=2), encoding="utf-8")
 
-# -------------------------
-# Profile data (static)
-# -------------------------
 PROFILE = {
     "name": "Dimla, Earl Jhon D.",
     "student_number": "2024-03779-MN-O",
@@ -84,10 +64,6 @@ PROFILE = {
     "saying": "Cogito Ergo Sum"
 }
 
-# -------------------------
-# Frontend pages
-# -------------------------
-@app.route("/")
 def home():
     return render_template("home.html")
 
@@ -108,7 +84,6 @@ def profile():
         )
         folder_files[f["name"]] = files
 
-    # Also load any files not in a folder
     uncategorized_files = query_db(
         "SELECT * FROM files WHERE folder_id IS NULL ORDER BY created_at DESC"
     )
@@ -123,7 +98,6 @@ def profile():
 
 @app.route("/works")
 def works():
-    # small helper to feed mini-nav items
     mini_nav = ["Uppercaser", "Area of Circle", "Area of Triangle"]
     return render_template("works.html", mini_nav=mini_nav)
 
@@ -138,36 +112,29 @@ def inject_contact():
     })
 
 
-# Serve profile picture if uploaded into uploads/ or static/images/
 @app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
-    # first check uploads directory
     path = UPLOAD_DIR / filename
     if path.exists():
         return send_from_directory(str(UPLOAD_DIR), filename)
-    # else static folder fallback
     static_path = APP_ROOT / "static" / "images" / filename
     if static_path.exists():
         return send_from_directory(str(static_path.parent), filename)
     abort(404)
 
-# -------------------------
-# REST API for folders & files
-# -------------------------
 @app.route("/api/folders", methods=["GET", "POST"])
 def api_folders():
     if request.method == "GET":
         rows = query_db("SELECT * FROM folders ORDER BY created_at DESC")
         folders = [dict(r) for r in rows]
         return jsonify(folders)
-    else:  # POST -> create folder
+    else:  
         data = request.json or {}
         name = data.get("name", "").strip()
         if not name:
             return jsonify({"error": "Folder name required"}), 400
         now = int(time.time())
         folder_id = execute_db("INSERT INTO folders (name, created_at) VALUES (?, ?)", (name, now))
-        # update cache listing
         update_cache_listing()
         return jsonify({"id": folder_id, "name": name, "created_at": now}), 201
 
@@ -182,7 +149,6 @@ def api_folder_modify(folder_id):
         update_cache_listing()
         return jsonify({"id": folder_id, "name": name})
     else:
-        # Delete folder and its files (DB has ON DELETE CASCADE)
         execute_db("DELETE FROM folders WHERE id = ?", (folder_id,))
         update_cache_listing()
         return jsonify({"deleted": True})
@@ -198,7 +164,6 @@ def api_files():
         files = [dict(r) for r in rows]
         return jsonify(files)
     else:
-        # POST -> upload file
         if "file" not in request.files:
             return jsonify({"error": "No file part"}), 400
         file = request.files["file"]
@@ -206,11 +171,9 @@ def api_files():
         name_override = request.form.get("display_name", "").strip()
         if file.filename == "":
             return jsonify({"error": "No selected file"}), 400
-        # save file
         filename = secure_unique_filename(file.filename)
         filepath = UPLOAD_DIR / filename
         file.save(str(filepath))
-        # record in DB
         display_name = name_override if name_override else file.filename
         file_ext = Path(filename).suffix.lower().lstrip(".")
         now = int(time.time())
@@ -238,7 +201,6 @@ def api_file_modify(file_id):
         update_cache_listing()
         return jsonify({"id": file_id, "name": new_name, "folder_id": new_folder})
     else:
-        # Delete file (remove disk file too)
         row = query_db("SELECT * FROM files WHERE id = ?", (file_id,), one=True)
         if not row:
             return jsonify({"error": "Not found"}), 404
@@ -255,7 +217,6 @@ def api_file_modify(file_id):
 
 @app.route("/api/file-content/<int:file_id>", methods=["GET", "PUT"])
 def api_file_content(file_id):
-    # allow reading/writing file content (for edit)
     row = query_db("SELECT * FROM files WHERE id = ?", (file_id,), one=True)
     if not row:
         return jsonify({"error": "Not found"}), 404
@@ -272,9 +233,6 @@ def api_file_content(file_id):
         update_cache_listing()
         return jsonify({"saved": True})
 
-# -------------------------
-# Helper: unique filename
-# -------------------------
 from werkzeug.utils import secure_filename
 from pathlib import Path
 
@@ -290,21 +248,8 @@ def secure_unique_filename(filename):
         counter += 1
     return filename
 
-# -------------------------
-# Execute a saved python file (simple "terminal")
-# SECURITY: This runs code on the server. Use only locally and with trusted files.
-# We'll impose a timeout and restrict execution directory to uploads/.
-# -------------------------
 @app.route("/api/exec/<int:file_id>", methods=["POST"])
 def api_exec_file(file_id):
-    """
-    Executes a python file saved in uploads and returns output.
-    WARNING: executing arbitrary code is dangerous. This endpoint includes:
-     - timeout (5 seconds)
-     - working dir locked to uploads/
-     - only executes files with .py extension
-    Use at your own risk and preferably run locally.
-    """
     row = query_db("SELECT * FROM files WHERE id = ?", (file_id,), one=True)
     if not row:
         return jsonify({"error": "file not found"}), 404
@@ -315,15 +260,13 @@ def api_exec_file(file_id):
     if not filepath.exists():
         return jsonify({"error": "file missing on disk"}), 404
 
-    # Execute with subprocess.run, timeout
     try:
-        # Use a safe python binary - assume system python3 available
         proc = subprocess.run(
             ["python3", str(filepath)],
             cwd=str(UPLOAD_DIR),
             capture_output=True,
             text=True,
-            timeout=5  # seconds
+            timeout=5 
         )
         return jsonify({
             "returncode": proc.returncode,
@@ -335,9 +278,6 @@ def api_exec_file(file_id):
     except Exception as e:
         return jsonify({"error": f"execution error: {str(e)}"}), 500
 
-# -------------------------
-# Utility: download a file by filename
-# -------------------------
 @app.route("/api/download/<int:file_id>", methods=["GET"])
 def api_download(file_id):
     row = query_db("SELECT * FROM files WHERE id = ?", (file_id,), one=True)
@@ -346,9 +286,6 @@ def api_download(file_id):
     filename = row["filename"]
     return send_from_directory(str(UPLOAD_DIR), filename, as_attachment=True)
 
-# -------------------------
-# Update cache listing helper
-# -------------------------
 def update_cache_listing():
     rows_f = query_db("SELECT * FROM folders ORDER BY created_at DESC")
     folders = []
@@ -360,7 +297,6 @@ def update_cache_listing():
             "created_at": f["created_at"],
             "files": [dict(x) for x in files]
         })
-    # root files (no folder)
     root_files = query_db("SELECT id, name, filename, file_type, created_at FROM files WHERE folder_id IS NULL ORDER BY created_at DESC")
     cache_obj = {
         "folders": folders,
@@ -374,10 +310,6 @@ def update_cache_listing():
 def api_cache():
     return jsonify(load_cache())
 
-# -------------------------
-# Small utilities (mini tools requested)
-# These are accessible via /api/tool/...
-# -------------------------
 @app.route("/api/tool/uppercaser", methods=["POST"])
 def api_uppercaser():
     data = request.json or {}
@@ -422,7 +354,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Initialize database at app start
 init_db()
 
 
@@ -491,15 +422,15 @@ def infix_to_postfix(expression):
     output = ""
 
     for char in expression:
-        if char.isalnum():  # Operand
+        if char.isalnum():  
             output += char
         elif char == '(':
             stack.append(char)
         elif char == ')':
             while stack and stack[-1] != '(':
                 output += stack.pop()
-            stack.pop()  # Remove '('
-        else:  # Operator
+            stack.pop() 
+        else: 
             while stack and stack[-1] != '(' and precedence[char] <= precedence.get(stack[-1], 0):
                 output += stack.pop()
             stack.append(char)
@@ -519,11 +450,7 @@ def api_stack_infix_to_postfix():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-# -------------------------
-# Run app
-# -------------------------
 if __name__ == "__main__":
-    # Helpful message if DB missing
     if not Path(app.config["DB_PATH"]).exists():
         print("Database not found - run `python db_init.py` to create portfolio.db")
     app.run(debug=True, host="127.0.0.1", port=5000)
